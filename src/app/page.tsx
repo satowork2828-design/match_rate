@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { AgendaItem } from '@/types/agenda';
 
@@ -13,7 +14,7 @@ export default function Home() {
   useEffect(() => {
     fetch(`${API_BASE}/agenda`)
       .then((res) => {
-        if (!res.ok) throw new Error('Failed to load agenda');
+        if (!res.ok) throw new Error('案件の読み込みに失敗しました');
         return res.json();
       })
       .then((data) => {
@@ -24,17 +25,21 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="loading">Loading agenda items…</div>;
-  if (error) return <div className="error">Error: {error}</div>;
+  if (loading) return <div className="loading">読み込み中…</div>;
+  if (error) return <div className="error">エラー: {error}</div>;
 
   return (
     <main className="container">
-      <h1>Agenda Items</h1>
+      <div className="page-header">
+        <h1>案件一覧</h1>
+        <Link href="/register" className="btn btn-primary">新規登録</Link>
+      </div>
       <table>
         <thead>
           <tr>
-            <th>Agenda Name</th>
-            <th>Script Name</th>
+            <th>案件名</th>
+            <th>スクリプト名</th>
+            <th>操作</th>
           </tr>
         </thead>
         <tbody>
@@ -42,6 +47,11 @@ export default function Home() {
             <tr key={item.id}>
               <td>{item.agendaName}</td>
               <td>{item.scriptName}</td>
+              <td>
+                <Link href={`/agenda/${item.id}/detail`} className="btn btn-primary btn-sm">詳細</Link>
+                {' '}
+                <Link href={`/agenda/${item.id}/analysis`} className="btn btn-secondary btn-sm">分析</Link>
+              </td>
             </tr>
           ))}
         </tbody>
