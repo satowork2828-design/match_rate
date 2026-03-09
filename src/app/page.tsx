@@ -48,7 +48,7 @@ export default function Home() {
               <td>{item.agendaName}</td>
               <td>{item.scriptName}</td>
               <td>
-                <Link href={`#  `} className="btn btn-primary btn-sm">詳細</Link>
+                <Link href={`#   `} className="btn btn-primary btn-sm">詳細</Link>
                 {' '}
                 <Link href={`/agenda/${item.id}/analysis`} className="btn btn-secondary btn-sm">分析</Link>
               </td>
