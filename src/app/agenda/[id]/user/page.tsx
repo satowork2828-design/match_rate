@@ -31,20 +31,23 @@ export default function UserAnalysisPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [searchStatus, setSearchStatus] = useState('');
-  const [searchKeywords, setSearchKeywords] = useState('');
-  const now = new Date();
-  const [searchYear, setSearchYear] = useState('');
-  const [searchMonth, setSearchMonth] = useState((now.getMonth() + 1).toString().padStart(2, '0'));
-  const [searchDay, setSearchDay] = useState(now.getDate().toString().padStart(2, '0'));
-  const [searchHour, setSearchHour] = useState('00');
-  const [searchMinute, setSearchMinute] = useState('00');
+  const STATUS_OPTIONS = ['エスカレ', '架電禁止', '報告', '対応完了'] as const;
+  const [searchStatuses, setSearchStatuses] = useState<Record<string, boolean>>({
+    エスカレ: false,
+    架電禁止: false,
+    報告: false,
+    対応完了: false,
+  });
+  const [searchKeywordTags, setSearchKeywordTags] = useState<string[]>([]);
+  const [keywordInput, setKeywordInput] = useState('');
+  const [searchDate, setSearchDate] = useState('');
+  const [searchTime, setSearchTime] = useState('00:00');
 
   const fetchConversations = useCallback(
     (filters?: { status?: string; responseTime?: string; keywords?: string }) => {
       const sp = new URLSearchParams();
       sp.set('userName', userName);
-      if (filters?.status?.trim()) sp.set('status', filters.status.trim());
+      if (filters?.status?.trim()) sp.set('status', filters.status);
       if (filters?.responseTime?.trim()) sp.set('responseTime', filters.responseTime.trim());
       if (filters?.keywords?.trim()) sp.set('keywords', filters.keywords.trim());
       return fetch(`${API_BASE}/agenda/${agendaId}/conversations?${sp}`)
@@ -84,26 +87,44 @@ export default function UserAnalysisPage() {
   }, [agendaId, userName, fetchConversations]);
 
   const buildResponseTimeFromPickers = () => {
-    if (!searchYear) return '';
-    const y = searchYear;
-    const m = searchMonth.padStart(2, '0') || '01';
-    const d = searchDay.padStart(2, '0') || '01';
-    const h = searchHour.padStart(2, '0') || '00';
-    const min = searchMinute.padStart(2, '0') || '00';
-    return `${y}-${m}-${d}T${h}:${min}:00`;
+    if (!searchDate) return '';
+    return `${searchDate}T${searchTime || '00:00'}`;
   };
 
   const handleSearch = () => {
     setDialogOpen(false);
     setLoading(true);
     const responseTime = buildResponseTimeFromPickers();
+    const status = Object.entries(searchStatuses)
+      .filter(([, checked]) => checked)
+      .map(([s]) => s)
+      .join(',');
     fetchConversations({
-      status: searchStatus,
+      status,
       responseTime,
-      keywords: searchKeywords,
+      keywords: searchKeywordTags.join(','),
     })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
+  };
+
+  const addKeywordTag = () => {
+    const trimmed = keywordInput.trim();
+    if (trimmed && !searchKeywordTags.includes(trimmed)) {
+      setSearchKeywordTags((prev) => [...prev, trimmed]);
+      setKeywordInput('');
+    }
+  };
+
+  const removeKeywordTag = (tag: string) => {
+    setSearchKeywordTags((prev) => prev.filter((t) => t !== tag));
+  };
+
+  const handleKeywordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',' || e.key === '、') {
+      e.preventDefault();
+      addKeywordTag();
+    }
   };
 
   const formatDateTime = (iso: string) => {
@@ -131,7 +152,7 @@ export default function UserAnalysisPage() {
         <p><strong>案件名:</strong> {agenda.agendaName}</p>
         <p><strong>スクリプト名:</strong> {agenda.scriptName}</p>
         <p><strong>ユーザー名:</strong> {userName}</p>
-        <p><strong>平均合致率:</strong> {avgRate != null ? `${(avgRate * 100).toFixed(1)}%` : '-'}</p>
+        <p><strong>合致率:</strong> {avgRate != null ? `${(avgRate * 100).toFixed(1)}%` : '-'}</p>
       </div>
       <div className="section-header">
         <h2 className="section-title">会話データ</h2>
@@ -165,76 +186,60 @@ export default function UserAnalysisPage() {
           <div className="dialog" onClick={(e) => e.stopPropagation()}>
             <h3>検索条件</h3>
             <div className="form-group">
-              <label htmlFor="searchStatus">ステータス</label>
-              <select id="searchStatus" value={searchStatus} onChange={(e) => setSearchStatus(e.target.value)}>
-                <option value="">指定なし</option>
-                <option value="エスカレ">エスカレ</option>
-                <option value="架電禁止">架電禁止</option>
-                <option value="報告">報告</option>
-                <option value="対応完了">対応完了</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>応答日時（これより前）</label>
-              <div className="datetime-picker-ja">
-                <select
-                  aria-label="年"
-                  value={searchYear}
-                  onChange={(e) => setSearchYear(e.target.value)}
-                >
-                  <option value="">指定なし</option>
-                  {Array.from({ length: 11 }, (_, i) => 2020 + i).map((y) => (
-                    <option key={y} value={y}>{y}年</option>
-                  ))}
-                </select>
-                <select
-                  aria-label="月"
-                  value={searchMonth}
-                  onChange={(e) => setSearchMonth(e.target.value)}
-                >
-                  {Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0')).map((m) => (
-                    <option key={m} value={m}>{parseInt(m, 10)}月</option>
-                  ))}
-                </select>
-                <select
-                  aria-label="日"
-                  value={searchDay}
-                  onChange={(e) => setSearchDay(e.target.value)}
-                >
-                  {Array.from({ length: 31 }, (_, i) => (i + 1).toString().padStart(2, '0')).map((d) => (
-                    <option key={d} value={d}>{parseInt(d, 10)}日</option>
-                  ))}
-                </select>
-                <span className="datetime-sep"> </span>
-                <select
-                  aria-label="時"
-                  value={searchHour}
-                  onChange={(e) => setSearchHour(e.target.value)}
-                >
-                  {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map((h) => (
-                    <option key={h} value={h}>{parseInt(h, 10)}時</option>
-                  ))}
-                </select>
-                <select
-                  aria-label="分"
-                  value={searchMinute}
-                  onChange={(e) => setSearchMinute(e.target.value)}
-                >
-                  {Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0')).map((m) => (
-                    <option key={m} value={m}>{parseInt(m, 10)}分</option>
-                  ))}
-                </select>
+              <label>ステータス</label>
+              <div className="checkbox-group">
+                {STATUS_OPTIONS.map((status) => (
+                  <label key={status} className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={searchStatuses[status] ?? false}
+                      onChange={(e) => setSearchStatuses((prev) => ({ ...prev, [status]: e.target.checked }))}
+                    />
+                    {status}
+                  </label>
+                ))}
               </div>
             </div>
             <div className="form-group">
-              <label htmlFor="searchKeywords">キーワード（カンマ区切り）</label>
-              <input
-                id="searchKeywords"
-                type="text"
-                value={searchKeywords}
-                onChange={(e) => setSearchKeywords(e.target.value)}
-                placeholder="例: レビュー, 目標"
-              />
+              <label htmlFor="searchDate">対応日時</label>
+              <div className="calendar-picker">
+                <input
+                  id="searchDate"
+                  type="date"
+                  value={searchDate}
+                  onChange={(e) => setSearchDate(e.target.value)}
+                  min="2020-01-01"
+                  max="2030-12-31"
+                />
+                <input
+                  id="searchTime"
+                  type="time"
+                  value={searchTime}
+                  onChange={(e) => setSearchTime(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="form-group">
+              <label htmlFor="searchKeywords">キーワード</label>
+              <div className="tag-input">
+                <div className="tag-list">
+                  {searchKeywordTags.map((tag) => (
+                    <span key={tag} className="tag">
+                      {tag}
+                      <button type="button" className="tag-remove" onClick={() => removeKeywordTag(tag)} aria-label={`${tag}を削除`}>×</button>
+                    </span>
+                  ))}
+                </div>
+                <input
+                  id="searchKeywords"
+                  type="text"
+                  value={keywordInput}
+                  onChange={(e) => setKeywordInput(e.target.value)}
+                  onKeyDown={handleKeywordKeyDown}
+                  onBlur={addKeywordTag}
+                  placeholder="キーワードを入力してEnter"
+                />
+              </div>
             </div>
             <div className="form-actions">
               <button type="button" className="btn btn-secondary" onClick={() => setDialogOpen(false)}>閉じる</button>
