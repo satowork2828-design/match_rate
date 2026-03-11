@@ -40,14 +40,13 @@ export default function ConversationEvaluationPage() {
       .finally(() => setLoading(false));
   }, [conversationId]);
 
-  const formatDateTime = (iso: string) => {
-    const d = new Date(iso);
-    return d.toLocaleString('ja-JP', {
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('ja-JP', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
     });
   };
 
@@ -57,16 +56,29 @@ export default function ConversationEvaluationPage() {
 
   return (
     <main className="container">
+      <style jsx>{`
+          .content{
+            background-color:rgb(156, 197, 238);
+            padding: 20px;
+          }
+          .content .content-box{
+            background-color: #fff;
+            padding: 10px;
+          }
+          .content .content-box .item-title{
+            font-weight: bold;
+          }
+          .content .content-box .item-value{
+            font-size: 14px;
+            margin-left: 10px;
+          }
+       `}
+       </style>
       <div className="page-header">
         <h1>ユーザー会話評価</h1>
         <Link href={`/agenda/${agendaId}/user?userName=${encodeURIComponent(userName)}`} className="btn btn-secondary">会話一覧に戻る</Link>
       </div>
-      <div className="analysis-info">
-        {/* <p><strong>会話ID:</strong> {conversation.conversation_id}</p> */}
-        <p><strong>ユーザー名:</strong> {conversation.userName}</p>
-        <p><strong>ステータス:</strong> {conversation.status}</p>
-        <p><strong>応答日時:</strong> {formatDateTime(conversation.responseTime)}</p>
-      </div>
+      
       <div className="button-row">
         <button
           type="button"
@@ -102,13 +114,25 @@ export default function ConversationEvaluationPage() {
         <p className="match-rate-value" style={{marginLeft: '10px'}}>{(conversation.matchingRate * 100).toFixed(1)}%</p>
       </div>
       <div className="content">
-        <p>今の営業スタイル、正直限界を感じていませんか？ 競争が激化する今の時代、市場の変化は<span className="highlight">驚くほど速くなっています</span>。 かつての成功体験や従来の営業手法が、もう通用しなくなっているんです。</p>
-        <p>
-        そこで今、求められているのが、テクノロジーを駆使した『未来の営業組織』への変革。 そう、『<span className="highlight">営業DX</span>』の実現です！ 最新テクノロジーを活用することで、組織としての持続的な成功が可能になります。
-        </p>
-        <p>
-          変革のための手法は主に3つ。 特に重要なのが、<span className="highlight">営業プロセスの自動化と、デジタルツールの戦略的な活用</span>です。 無駄を省き、人間が本来注力すべき業務に集中できる環境を整えます。
-        </p>
+        <div className='content-box'>
+          <div className='item-title'>電話番号</div>
+          <div className='item-value'>0242-22-2929</div>
+          <div className='item-title'>会社名</div>
+          <div className='item-value'>株式会社ジーエスピー</div>
+          <div className='item-title'>名前</div>
+          <div className='item-value'>稲本勝彦</div>
+          <div className='item-title'>メールアドレス</div>
+          <div className='item-value'>yasukazu@gs-p.co.jp</div>
+          <div className='item-title'>部署名</div>
+          <div className='item-value'>-</div>
+        </div>
+        
+      </div>
+      <div className="analysis-info">
+        {/* <p><strong>会話ID:</strong> {conversation.conversation_id}</p> */}
+        <p><strong>ユーザー名:</strong> {conversation.userName}</p>
+        <p><strong>ステータス:</strong> {conversation.status}</p>
+        <p><strong>対応日時":</strong> {formatDate(conversation.responseTime)}</p>
       </div>
     </main>
   );

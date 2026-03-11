@@ -41,7 +41,6 @@ export default function UserAnalysisPage() {
   const [searchKeywordTags, setSearchKeywordTags] = useState<string[]>([]);
   const [keywordInput, setKeywordInput] = useState('');
   const [searchDate, setSearchDate] = useState('');
-  const [searchTime, setSearchTime] = useState('00:00');
 
   const fetchConversations = useCallback(
     (filters?: { status?: string; responseTime?: string; keywords?: string }) => {
@@ -88,7 +87,7 @@ export default function UserAnalysisPage() {
 
   const buildResponseTimeFromPickers = () => {
     if (!searchDate) return '';
-    return `${searchDate}T${searchTime || '00:00'}`;
+    return searchDate;
   };
 
   const handleSearch = () => {
@@ -127,14 +126,13 @@ export default function UserAnalysisPage() {
     }
   };
 
-  const formatDateTime = (iso: string) => {
-    const d = new Date(iso);
-    return d.toLocaleString('ja-JP', {
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('ja-JP', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
     });
   };
 
@@ -144,6 +142,7 @@ export default function UserAnalysisPage() {
 
   return (
     <main className="container">
+      
       <div className="page-header">
         <h1>ユーザー案件分析</h1>
         <Link href={`/agenda/${agendaId}/analysis`} className="btn btn-secondary">分析に戻る</Link>
@@ -163,7 +162,7 @@ export default function UserAnalysisPage() {
           <tr>
             <th>合致率</th>
             <th>ステータス</th>
-            <th>応答日時</th>
+            <th>対応日時"</th>
             <th>操作</th>
           </tr>
         </thead>
@@ -172,7 +171,7 @@ export default function UserAnalysisPage() {
             <tr key={c.conversation_id}>
               <td>{(c.completionRate * 100).toFixed(1)}%</td>
               <td>{c.status}</td>
-              <td>{formatDateTime(c.responseTime)}</td>
+              <td>{formatDate(c.responseTime)}</td>
               <td>
                 <Link href={`/agenda/${agendaId}/user/conversation/${encodeURIComponent(c.conversation_id)}?userName=${encodeURIComponent(userName)}`} className="btn btn-primary btn-sm">詳細</Link>
               </td>
@@ -201,7 +200,7 @@ export default function UserAnalysisPage() {
               </div>
             </div>
             <div className="form-group">
-              <label htmlFor="searchDate">対応日時</label>
+              <label htmlFor="searchDate">応答日（これより前）</label>
               <div className="calendar-picker">
                 <input
                   id="searchDate"
@@ -210,12 +209,6 @@ export default function UserAnalysisPage() {
                   onChange={(e) => setSearchDate(e.target.value)}
                   min="2020-01-01"
                   max="2030-12-31"
-                />
-                <input
-                  id="searchTime"
-                  type="time"
-                  value={searchTime}
-                  onChange={(e) => setSearchTime(e.target.value)}
                 />
               </div>
             </div>

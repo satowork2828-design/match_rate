@@ -320,6 +320,19 @@ h1 {
   color: #0f172a;
 }
 
+.detail-content p {
+  margin-bottom: 0.5rem;
+}
+
+.detail-text {
+  margin-bottom: 1rem;
+  padding: 0.5rem 0.75rem;
+  background: #f8fafc;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  min-height: 2.5rem;
+}
+
 .dialog .form-group {
   display: flex;
   flex-wrap: wrap;
