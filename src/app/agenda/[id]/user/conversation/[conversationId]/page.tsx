@@ -78,6 +78,10 @@ export default function ConversationEvaluationPage() {
         <h1>ユーザー会話評価</h1>
         <Link href={`/agenda/${agendaId}/user?userName=${encodeURIComponent(userName)}`} className="btn btn-secondary">会話一覧に戻る</Link>
       </div>
+      <div className="analysis-info">
+        {/* <p><strong>会話ID:</strong> {conversation.conversation_id}</p> */}
+        <p><strong>ユーザー名:</strong> {conversation.userName}</p>
+      </div>
       
       <div className="button-row">
         <button
@@ -129,8 +133,6 @@ export default function ConversationEvaluationPage() {
         
       </div>
       <div className="analysis-info">
-        {/* <p><strong>会話ID:</strong> {conversation.conversation_id}</p> */}
-        <p><strong>ユーザー名:</strong> {conversation.userName}</p>
         <p><strong>ステータス:</strong> {conversation.status}</p>
         <p><strong>対応日時":</strong> {formatDate(conversation.responseTime)}</p>
       </div>
