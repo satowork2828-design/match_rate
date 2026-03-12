@@ -117,21 +117,29 @@ export default function ConversationEvaluationPage() {
         <h2 className="section-title" style={{marginTop: '4px'}}>合致率</h2>
         <p className="match-rate-value" style={{marginLeft: '10px'}}>{(conversation.matchingRate * 100).toFixed(1)}%</p>
       </div>
-      <div className="content">
-        <div className='content-box'>
-          <div className='item-title'>電話番号</div>
-          <div className='item-value'>0242-22-2929</div>
-          <div className='item-title'>会社名</div>
-          <div className='item-value'>株式会社ジーエスピー</div>
-          <div className='item-title'>名前</div>
-          <div className='item-value'>稲本勝彦</div>
-          <div className='item-title'>メールアドレス</div>
-          <div className='item-value'>yasukazu@gs-p.co.jp</div>
-          <div className='item-title'>部署名</div>
-          <div className='item-value'>-</div>
+      {activeTab=='match' && <div className="p-4 bg-blue-100 rounded-md">
+        <div className='bg-white p-2 rounded-md'>
+          <p>今の営業スタイル、正直限界を感じていませんか？ 競争が激化する今の時代、市場の変化は<span className='text-red-500'>驚くほど速くなっています。</span> かつての成功体験や従来の営業手法が、もう通用しなくなっているんです。</p>
+          <p>そこで今、求められているのが、テクノロジーを駆使した『未来の営業組織』への変革。 <span className='text-red-500'>そう、『営業DX』の実現です！ </span>最新テクノロジーを活用することで、組織としての持続的な成功が可能になります。</p>
+          <p>変革のための手法は主に3つ。 <span className='text-red-500'>特に重要なのが、営業プロセスの自動化と、デジタルツールの戦略的な活用です。</span> 無駄を省き、人間が本来注力すべき業務に集中できる環境を整えます。</p>
         </div>
-        
       </div>
+      }
+      {activeTab=='customer' && <div className="p-4 bg-blue-100 rounded-md">
+        <div className='bg-white p-2 rounded-md'>
+          <div className='text-lg font-bold'>電話番号</div>
+          <div className='text-sm mt-2 ml-4 mb-2'>0242-22-2929</div>
+          <div className='text-lg font-bold'>会社名</div>
+          <div className='text-sm mt-2 ml-4 mb-2'>株式会社ジーエスピー</div>
+          <div className='text-lg font-bold'>名前</div>
+          <div className='text-sm mt-2 ml-4 mb-2'>稲本勝彦</div>
+          <div className='text-lg font-bold'>メールアドレス</div>
+          <div className='text-sm mt-2 ml-4 mb-2'>yasukazu@gs-p.co.jp</div>
+          <div className='text-lg font-bold'>部署名</div>
+          <div className='text-sm mt-2 ml-4 mb-2'>-</div>
+        </div>
+      </div>
+      }
       <div className="analysis-info">
         <p><strong>ステータス:</strong> {conversation.status}</p>
         <p><strong>対応日時":</strong> {formatDate(conversation.responseTime)}</p>
